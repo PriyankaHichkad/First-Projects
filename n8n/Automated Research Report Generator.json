@@ -1,0 +1,175 @@
+{
+  "name": "Automated Research Report Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nWhat do you want to Research???",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "7b53e8dd-c3a8-4577-b02c-804931ae9ec0",
+      "name": "Input Message",
+      "webhookId": "fa989028-3cb5-47d6-a197-6509ae2aac0c",
+      "alwaysOutputData": true,
+      "notes": "Input data for the AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "nvidia/llama-3.3-nemotron-super-49b-v1.5",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        480,
+        256
+      ],
+      "id": "c8c883ce-20b1-477a-b656-5305e7b11f16",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "YyXskfaF0bjcH0tZ",
+          "name": "OpenRouter account"
+        }
+      },
+      "notes": "Research"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "send the output in text format as the email body",
+        "fromEmail": "priyanka.rhichkad.min23@itbhu.ac.in",
+        "toEmail": "priyanka.rhichkad.min23@itbhu.ac.in",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailFormat": "both",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', ``, 'string') }}",
+        "html": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('HTML', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSendTool",
+      "typeVersion": 2.1,
+      "position": [
+        1056,
+        256
+      ],
+      "id": "36c5a490-e284-43d8-999d-0da8ec28555d",
+      "name": "Send Email of the output",
+      "webhookId": "ca49fcb6-db64-4464-9755-0a29dfce7882",
+      "credentials": {
+        "smtp": {
+          "id": "zTNvt2Yhfvrr2j9F",
+          "name": "SMTP account 4"
+        }
+      },
+      "notes": "Use this tool to send the final research report via email to the user after the report is generated.\n\nyou could write in the format-\nHello,\n\nHere is the AI generated research report you requested on the chatInput.\n\n{The output from the model}\n\nBest regards,\nPriyanka's AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        768,
+        256
+      ],
+      "id": "90ae1572-bac6-473b-b47c-e689c63bcf32",
+      "name": "search websites for research content",
+      "credentials": {
+        "serpApi": {
+          "id": "UygLLzXPDqYOcXaP",
+          "name": "SerpAPI account 3"
+        }
+      },
+      "notes": "Use this tool to search the internet for articles, research papers, and webpages about a given topic. \nReturn 3–5 relevant results with titles and links."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a research report on the following topic:\n\n{{ $json.chatInput }}\n\nInstructions:\n1. Use the Research Agent tool to gather information from the internet.\n2. Create a structured research report based on the findings from at least 3 to 5 relevant articles or web pages in 300-400 words.\n3. After generating the report, use the Send Email tool to email the report to the user in plain text format without Markdown formatting.",
+        "options": {
+          "systemMessage": "=You are the main AI workflow agent responsible for generating and delivering research reports.\n\nYou have access to two tools:\n\n1. Web Search Tool\nThis tool performs internet research using SerpAPI and returns summarized findings with sources.\n\n2. Send Email Tool\nThis tool sends an email containing the final research report.\n\nYour task is to coordinate the workflow as follows:\n\nStep 1: When a user provides a topic, call the Web search tool to gather reliable information about the topic.\n\nStep 2: Review the research results returned by the tool and convert them into a clear, structured research report.\n\nStep 3: The report must include:\n- Title\n- Introduction\n- Key Insights\n- Current Applications\n- Future Outlook\n- Conclusion\n- Sources and links\n\nThe report should be approximately 300–400 words and from at least 3 to 5 relevant articles or web pages.\n\nStep 4: After generating the report, use the Send Email tool to send the final report to the user in plain text format without Markdown formatting.\n\nImportant Rules:\n- Always use the Research Agent tool before writing the report.\n- Always use the Send Email tool after generating the report.\n- Do not invent facts. Only use information gathered from the research tool.\n- Keep the language clear, professional, and informative."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "6adb49e3-99e9-43d5-b6ea-909c87e05baf",
+      "name": "Main AI Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Input Message": {
+      "main": [
+        [
+          {
+            "node": "Main AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Main AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email of the output": {
+      "ai_tool": [
+        [
+          {
+            "node": "Main AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search websites for research content": {
+      "ai_tool": [
+        [
+          {
+            "node": "Main AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Main AI Agent": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c6441256-dd8f-44b7-af9a-2b4918f30f91",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c76cbd41aac0dfc1d3fc04431354ea8db1c7d28d2aab6034aa40ae73cdec24d6"
+  },
+  "id": "spkARo34aOHq9xTI",
+  "tags": []
+}
